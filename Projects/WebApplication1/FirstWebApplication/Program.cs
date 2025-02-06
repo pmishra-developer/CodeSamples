@@ -4,31 +4,20 @@ public abstract class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
-
-        builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        var app = builder.Build();
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        var app = WebApplication.Create();
+        app.Run(async context =>
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+            context.Response.Headers.Append("content-type", "text/html");
+            await context.Response.WriteAsync($"Application Name: {System.Reflection.Assembly.GetEntryAssembly().GetName().Name}<br/>");
+            await context.Response.WriteAsync($"Application Base Path: {System.AppContext.BaseDirectory}<br/>");
 
-        app.UseHttpsRedirection();
+            System.Reflection.Assembly entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
+            var targetFramework = entryAssembly.GetCustomAttributes(typeof(System.Runtime.Versioning.TargetFrameworkAttribute), true)[0] as System.Runtime.Versioning.TargetFrameworkAttribute;
+            await context.Response.WriteAsync($"Target Framework: {targetFramework.FrameworkName}<br/>");
 
-        app.UseAuthorization();
-
-
-        app.MapControllers();
-
+            await context.Response.WriteAsync($"Version: {System.Reflection.Assembly.GetEntryAssembly().GetName().Version}<br/>");
+        });
         app.Run();
+
     }
 }
